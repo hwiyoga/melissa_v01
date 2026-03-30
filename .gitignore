@@ -1,0 +1,27 @@
+# Secrets
+.env
+github-recovery-codes.txt
+
+# Trade logs (personal data)
+live_trades.json
+paper_trades.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# Logs
+melissa.log
+nohup.out
+
+# PID lock
+/tmp/melissa_bot.pid
+
+# Claude session
+.claude/

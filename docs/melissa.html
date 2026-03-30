@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Melissa — Polymarket Trading Bot</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --accent: #6c63ff;
+      --accent2: #00d4aa;
+      --warn: #f5a623;
+      --danger: #e74c3c;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --code-bg: #12141e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    nav {
+      width: 240px;
+      min-width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    nav .logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    nav .logo h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    nav .logo p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    nav a {
+      display: block;
+      padding: 7px 24px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.15s, background 0.15s;
+      border-left: 2px solid transparent;
+    }
+
+    nav a:hover { color: var(--text); background: rgba(108,99,255,0.08); }
+    nav a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(108,99,255,0.1); }
+
+    nav .nav-section {
+      padding: 16px 24px 6px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      max-width: 860px;
+      padding: 48px 56px;
+    }
+
+    /* ── Sections ── */
+    section { margin-bottom: 60px; }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.3px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 24px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 12px;
+    }
+
+    p { margin-bottom: 12px; color: var(--text); }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      background: linear-gradient(135deg, rgba(231,76,60,0.18), rgba(245,166,35,0.12));
+      border: 2px solid #e74c3c;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+    }
+
+    .disclaimer-header {
+      font-size: 20px;
+      font-weight: 800;
+      color: #e74c3c;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .disclaimer-body p {
+      font-size: 14px;
+      color: #f0c0bb;
+      margin-bottom: 10px;
+      line-height: 1.75;
+    }
+
+    .disclaimer-body p:last-child { margin-bottom: 0; }
+
+    .disclaimer-body strong {
+      color: #ff6b5b;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,170,0.08));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 36px;
+      margin-bottom: 40px;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .hero p { color: var(--muted); font-size: 15px; margin: 0; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .badge-live { background: rgba(231,76,60,0.2); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+    .badge-paper { background: rgba(0,212,170,0.15); color: var(--accent2); border: 1px solid rgba(0,212,170,0.3); }
+    .badge-auto { background: rgba(108,99,255,0.2); color: var(--accent); border: 1px solid rgba(108,99,255,0.3); }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 20px 0;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      text-align: center;
+      min-width: 110px;
+    }
+
+    .flow-step .num {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .flow-step .label { font-size: 13px; font-weight: 500; margin-top: 2px; }
+
+    .flow-arrow {
+      color: var(--muted);
+      font-size: 18px;
+      padding: 0 2px;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    td code {
+      background: var(--code-bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 12px;
+      color: var(--accent2);
+    }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      overflow-x: auto;
+      margin: 16px 0;
+      font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #c9d1d9;
+    }
+
+    pre .comment { color: #6a737d; }
+    pre .string { color: #a8d8a8; }
+    pre .keyword { color: #ff7b72; }
+    pre .func { color: #d2a8ff; }
+    pre .num { color: #79c0ff; }
+
+    /* ── Cards ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .card .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .card .card-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14px;
+      border-left: 3px solid;
+    }
+
+    .callout-warn { background: rgba(245,166,35,0.08); border-color: var(--warn); }
+    .callout-danger { background: rgba(231,76,60,0.08); border-color: var(--danger); }
+    .callout-info { background: rgba(108,99,255,0.08); border-color: var(--accent); }
+    .callout-success { background: rgba(0,212,170,0.08); border-color: var(--accent2); }
+
+    .callout strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .callout-warn strong { color: var(--warn); }
+    .callout-danger strong { color: var(--danger); }
+    .callout-info strong { color: var(--accent); }
+    .callout-success strong { color: var(--accent2); }
+
+    /* ── Lesson cards ── */
+    .lesson {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin: 12px 0;
+    }
+
+    .lesson .lesson-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .lesson .lesson-title { font-size: 14px; font-weight: 600; margin: 4px 0 8px; }
+    .lesson .lesson-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .lesson .lesson-rule {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: var(--code-bg);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--accent2);
+      font-family: monospace;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      nav { display: none; }
+      main { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav>
+    <div class="logo">
+      <h1>Melissa</h1>
+      <p>Polymarket Bot v1.0</p>
+    </div>
+    <div class="nav-section">Overview</div>
+    <a href="#intro" class="active">Introduction</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#flow">Trading Flow</a>
+
+    <div class="nav-section">Components</div>
+    <a href="#market-scanning">Market Scanning</a>
+    <a href="#signals">Signal Detection</a>
+    <a href="#binance">Binance Feed</a>
+    <a href="#claude">Claude AI Engine</a>
+    <a href="#execution">Trade Execution</a>
+    <a href="#telegram">Telegram Alerts</a>
+
+    <div class="nav-section">Operations</div>
+    <a href="#modes">Run Modes</a>
+    <a href="#config">Configuration</a>
+    <a href="#safety">Safety Controls</a>
+    <a href="#lessons">Learned Lessons</a>
+
+    <div class="nav-section">Reference</div>
+    <a href="#files">File Reference</a>
+    <a href="#apis">APIs Used</a>
+    <a href="#commands">Commands</a>
+  </nav>
+
+  <!-- Main content -->
+  <main>
+
+    <div class="disclaimer">
+      <div class="disclaimer-header">⚠ DISCLAIMER — READ BEFORE USING</div>
+      <div class="disclaimer-body">
+        <p><strong>Melissa is a highly experimental trading bot with no guarantee of successful trading.</strong> It is an ongoing personal learning project exploring how to apply AI capabilities in prediction markets like Polymarket.</p>
+        <p>Melissa does <strong>not</strong> provide financial advice of any kind. By using this software, you acknowledge and accept <strong>high exposure to investment risk</strong>, including the potential loss of all capital deployed.</p>
+        <p>Past performance — wins, losses, or any simulated results — does not indicate future outcomes. Trade responsibly and only with funds you can afford to lose entirely.</p>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Melissa</h1>
+      <p>A semi-automated AI trading bot for Polymarket — scanning crypto up/down markets and short-window prediction markets, powered by Claude AI with real-time Binance price feeds.</p>
+    </div>
+
+    <!-- Introduction -->
+    <section id="intro">
+      <h2>Introduction</h2>
+      <p>Melissa is a Python-based trading bot that monitors <a href="https://polymarket.com" style="color:var(--accent)">Polymarket</a> prediction markets, identifies potential mispricing using AI analysis, and executes trades via the Polymarket CLOB API.</p>
+      <p>The bot combines three data sources to make decisions: <strong>Polymarket market prices</strong> (sentiment/positioning), <strong>Binance spot price data</strong> (real-time crypto direction), and <strong>Claude AI</strong> (reasoning, confidence scoring, and pattern recognition).</p>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title">Markets Scanned</div>
+          <div class="card-value">BTC, ETH, SOL, XRP</div>
+          <div class="card-sub">5-min and 15-min windows</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Scan Interval</div>
+          <div class="card-value">5 min</div>
+          <div class="card-sub">30 min cooldown after no-trade</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Order Size</div>
+          <div class="card-value">$5 USDC</div>
+          <div class="card-sub">Hard cap at $25 USDC</div>
+        </div>
+        <div class="card">
+          <div class="card-title">AI Model</div>
+          <div class="card-value">Claude Opus 4.6</div>
+          <div class="card-sub">~$0.08 per recommendation call</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section id="architecture">
+      <h2>Architecture</h2>
+      <p>Melissa is a single Python file (<code>bot.py</code>) with no external database. All state is stored in JSON files on disk. It runs as a background loop process on a local machine or VPS.</p>
+
+      <h3>Data Sources</h3>
+      <table>
+        <thead><tr><th>Source</th><th>Purpose</th><th>Endpoint</th></tr></thead>
+        <tbody>
+          <tr><td>Polymarket Gamma API</td><td>Market discovery — fetches active up/down markets and today's short-window markets</td><td><code>gamma-api.polymarket.com</code></td></tr>
+          <tr><td>Polymarket CLOB API</td><td>Order execution + Polymarket price history per token</td><td><code>clob.polymarket.com</code></td></tr>
+          <tr><td>Polymarket Data API</td><td>Wallet positions, trade history, P&amp;L reporting</td><td><code>data-api.polymarket.com</code></td></tr>
+          <tr><td>Binance Klines API</td><td>Real-time spot price direction and velocity for BTC/ETH/SOL/XRP</td><td><code>api.binance.com/api/v3/klines</code></td></tr>
+          <tr><td>Anthropic API</td><td>Claude AI for trade reasoning and confidence scoring</td><td><code>claude-opus-4-6</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Flow -->
+    <section id="flow">
+      <h2>Trading Flow</h2>
+      <p>Each scan cycle runs the following pipeline:</p>
+
+      <div class="flow">
+        <div class="flow-step"><div class="num">Step 1</div><div class="label">Fetch Markets</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="num">Step 2</div><div class="label">Detect Deviation</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="num">Step 3</div><div class="label">Fetch Binance + Trends</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="num">Step 4</div><div class="label">Ask Claude</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="num">Step 5</div><div class="label">Approve + Execute</div></div>
+      </div>
+
+      <h3>Step 1 — Fetch Markets</h3>
+      <p>Melissa fetches active Polymarket markets in two categories:</p>
+      <ul style="padding-left:20px; color:var(--muted); font-size:14px; line-height:2">
+        <li><strong style="color:var(--text)">Crypto up/down markets</strong> — 5-min and 15-min windows for BTC, ETH, SOL, XRP. Up to 5 upcoming windows per coin per timeframe.</li>
+        <li><strong style="color:var(--text)">Today's short-window markets</strong> — Any Polymarket event closing within 24 hours with volume &gt; $200,000 (sports, news, weather, crypto price levels).</li>
+      </ul>
+
+      <h3>Step 2 — Detect Deviation</h3>
+      <p>Claude is only called if there is a reason to. Markets are scanned for a price deviation threshold of <strong>&gt;8¢ from 50/50</strong> (e.g. one side at 58¢+). Markets near resolution (&gt;90¢ or &lt;10¢) are excluded. High-volume today's markets are always included regardless of deviation.</p>
+
+      <h3>Step 3 — Fetch Binance + Polymarket Trends</h3>
+      <p>Before sending data to Claude, Melissa enriches each coin section with:</p>
+      <ul style="padding-left:20px; color:var(--muted); font-size:14px; line-height:2">
+        <li><strong style="color:var(--text)">Binance spot feed</strong> — Last 5 candles at 1-min intervals (5-min markets) or 3-min intervals (15-min markets). Shows real direction and velocity of the actual crypto price.</li>
+        <li><strong style="color:var(--text)">Polymarket price trend</strong> — Per-token price history within the current window from CLOB <code>/prices-history</code>. Shows how market sentiment has shifted.</li>
+      </ul>
+
+      <h3>Step 4 — Ask Claude</h3>
+      <p>Claude receives a combined prompt containing:</p>
+      <ul style="padding-left:20px; color:var(--muted); font-size:14px; line-height:2">
+        <li>All market data (prices, token IDs, Binance trends, Polymarket trends)</li>
+        <li>Recent trade performance history (last 20 resolved trades)</li>
+        <li>Learned lessons from past failures (<code>lessons.md</code>)</li>
+      </ul>
+      <p>Claude returns a JSON array of trade recommendations, each with a confidence level (<code>low</code>, <code>medium</code>, <code>high</code>), a target price, limit price, and reasoning.</p>
+
+      <h3>Step 5 — Approve &amp; Execute</h3>
+      <p>In <strong>auto mode</strong>, HIGH confidence trades execute immediately. Medium and low confidence trades are sent to Telegram for manual approval. In <strong>manual mode</strong>, all trades require approval via Telegram or terminal.</p>
+    </section>
+
+    <!-- Market Scanning -->
+    <section id="market-scanning">
+      <h2>Market Scanning</h2>
+      <p>Polymarket crypto up/down markets follow a predictable slug pattern: <code>&lt;coin&gt;-updown-&lt;duration&gt;-&lt;unix_timestamp&gt;</code>. Melissa generates these slugs from the current time, incrementing forward to find upcoming windows.</p>
+
+      <pre><code><span class="comment"># Example slugs generated by Melissa</span>
+btc-updown-5m-1774800000
+eth-updown-15m-1774800900
+sol-updown-5m-1774800300</code></pre>
+
+      <p>Markets that have already expired (end date in the past) are filtered out before being sent to Claude.</p>
+    </section>
+
+    <!-- Signals -->
+    <section id="signals">
+      <h2>Signal Detection</h2>
+      <p>Melissa uses a <strong>deviation gate</strong> to decide whether to invoke Claude. This prevents unnecessary API calls when markets are near 50/50.</p>
+
+      <table>
+        <thead><tr><th>Condition</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>No crypto deviation &gt;8¢ AND no high-volume today's market</td><td>Skip Claude, wait for next scan</td></tr>
+          <tr><td>Crypto deviation &gt;8¢ detected</td><td>Include that market in Claude's prompt</td></tr>
+          <tr><td>Today's market with volume &gt;$200k</td><td>Always include in Claude's prompt</td></tr>
+          <tr><td>Market at &gt;90¢ or &lt;10¢</td><td>Excluded (near resolution, no edge)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-info">
+        <strong>Note</strong>
+        A deviation from 50/50 does NOT automatically mean a trade. It only triggers Claude to look. Claude then applies trend analysis and lessons to decide whether to act.
+      </div>
+    </section>
+
+    <!-- Binance -->
+    <section id="binance">
+      <h2>Binance Price Feed</h2>
+      <p>Melissa fetches real-time spot price data from Binance's public klines API (no API key required). This is the primary signal for determining actual crypto price direction — independent of Polymarket's own lagged data.</p>
+
+      <h3>What Claude Sees</h3>
+      <pre><code>BTC spot (Binance): FALLING ↓  $83,450 → $83,210 → $82,980  (-$470 in 4 min)
+Polymarket sentiment:           Down 68¢ / Up 32¢
+Polymarket trend (token):       FALLING ↓  47¢ → 51¢ → 68¢  (+21¢ in 8 min)</code></pre>
+
+      <h3>Decision Logic</h3>
+      <table>
+        <thead><tr><th>Binance</th><th>Polymarket</th><th>Interpretation</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>FALLING ↓</td><td>Down leading</td><td>Momentum confirmed</td><td>Do NOT fade — skip or LOW only</td></tr>
+          <tr><td>RISING ↑</td><td>Down leading</td><td><strong>Divergence</strong> — Polymarket lagging</td><td>Potential edge — investigate</td></tr>
+          <tr><td>FLAT →</td><td>Any deviation</td><td>Stale signal, possible mean reversion</td><td>Medium confidence acceptable</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-success">
+        <strong>Key Insight</strong>
+        The divergence case — where Binance is moving in the opposite direction to what Polymarket has priced — is where real alpha exists. Polymarket reacts slower than spot markets, creating brief windows of mispricing.
+      </div>
+    </section>
+
+    <!-- Claude -->
+    <section id="claude">
+      <h2>Claude AI Engine</h2>
+      <p>Claude Opus 4.6 is Melissa's reasoning core. It receives all market data and returns structured trade recommendations as a JSON array.</p>
+
+      <h3>System Prompt Policy</h3>
+      <p>Claude is instructed to behave as a prediction market analyst with two market categories:</p>
+      <ul style="padding-left:20px; color:var(--muted); font-size:14px; line-height:2">
+        <li><strong style="color:var(--text)">Crypto up/down markets</strong> — Be conservative. Check Binance direction before acting on any deviation. Never HIGH confidence on deviation alone.</li>
+        <li><strong style="color:var(--text)">Today's short-window markets</strong> — Sports, news, weather. Real edge exists from base rates and news context. More willing to go HIGH confidence.</li>
+      </ul>
+
+      <h3>Output Format</h3>
+      <pre><code>[
+  {
+    <span class="string">"token_id"</span>:        <span class="string">"0x1234..."</span>,
+    <span class="string">"category"</span>:        <span class="string">"crypto-5m"</span>,
+    <span class="string">"outcome"</span>:         <span class="string">"Down"</span>,
+    <span class="string">"market_question"</span>: <span class="string">"BTC Up or Down - 9:00AM-9:15AM ET"</span>,
+    <span class="string">"side"</span>:            <span class="string">"BUY"</span>,
+    <span class="string">"current_price"</span>:   <span class="num">0.32</span>,
+    <span class="string">"target_price"</span>:    <span class="num">0.45</span>,
+    <span class="string">"limit_price"</span>:     <span class="num">0.33</span>,
+    <span class="string">"reasoning"</span>:       <span class="string">"Binance shows RISING despite Down leading at 68¢ — divergence signal."</span>,
+    <span class="string">"confidence"</span>:      <span class="string">"medium"</span>
+  }
+]</code></pre>
+
+      <h3>Learning Loop</h3>
+      <p>Claude's decision-making improves over time through two mechanisms:</p>
+      <ul style="padding-left:20px; color:var(--muted); font-size:14px; line-height:2">
+        <li><strong style="color:var(--text)">Recent performance history</strong> — Last 20 resolved trades (wins/losses, P&amp;L) are appended to every prompt so Claude calibrates its confidence based on what's actually been working.</li>
+        <li><strong style="color:var(--text)">lessons.md</strong> — A human-curated file of explicit rules derived from real trade failures. Injected into the system prompt every call.</li>
+      </ul>
+    </section>
+
+    <!-- Execution -->
+    <section id="execution">
+      <h2>Trade Execution</h2>
+      <p>Live trades are placed via the Polymarket CLOB (Central Limit Order Book) API using <code>py-clob-client</code>. Orders are GTC (Good Till Cancelled) limit orders.</p>
+
+      <h3>Execution Guards</h3>
+      <ul style="padding-left:20px; color:var(--muted); font-size:14px; line-height:2">
+        <li>Limit price must be between <code>0.01</code> and <code>0.99</code></li>
+        <li>Order size capped at <code>$25 USDC</code> hard limit</li>
+        <li>Failed orders (e.g. insufficient balance) are caught, logged, and reported to Telegram — bot continues without crashing</li>
+      </ul>
+
+      <h3>Trade Logging</h3>
+      <p>Every executed trade (live or paper) is logged to a JSON file with full details including timestamp, token ID, price, shares, confidence, and reasoning.</p>
+      <ul style="padding-left:20px; color:var(--muted); font-size:14px; line-height:2">
+        <li><code>live_trades.json</code> — Live executed orders</li>
+        <li><code>paper_trades.json</code> — Paper mode simulated orders</li>
+      </ul>
+    </section>
+
+    <!-- Telegram -->
+    <section id="telegram">
+      <h2>Telegram Integration</h2>
+      <p>Melissa communicates with its operator via a Telegram bot. All significant events are pushed as messages, and trade approvals can be sent from a phone.</p>
+
+      <table>
+        <thead><tr><th>Event</th><th>Message</th></tr></thead>
+        <tbody>
+          <tr><td>Trade opportunity found</td><td>🤖 N trade opportunities found!</td></tr>
+          <tr><td>AUTO mode HIGH confidence</td><td>⚡ AUTO-EXECUTING: &lt;market question&gt;</td></tr>
+          <tr><td>Awaiting approval</td><td>Sends full trade details + E/S/Q buttons</td></tr>
+          <tr><td>Order failed</td><td>⚠️ Order failed: &lt;error&gt;</td></tr>
+          <tr><td>Session summary</td><td>📋 Session: X trades, $Y P&amp;L</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warn">
+        <strong>Approval Window</strong>
+        Trade approval requests time out after 5 minutes. If no reply is received, the trade is skipped automatically.
+      </div>
+    </section>
+
+    <!-- Modes -->
+    <section id="modes">
+      <h2>Run Modes</h2>
+      <table>
+        <thead><tr><th>Command</th><th>Mode</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>python3 bot.py</code></td>
+            <td><span class="badge badge-live">LIVE</span></td>
+            <td>Single scan, manual approval via terminal. Requires funded wallet.</td>
+          </tr>
+          <tr>
+            <td><code>python3 bot.py --loop</code></td>
+            <td><span class="badge badge-live">LIVE</span></td>
+            <td>Continuous loop every 5 min. Manual Telegram approval per trade.</td>
+          </tr>
+          <tr>
+            <td><code>python3 bot.py --loop --auto</code></td>
+            <td><span class="badge badge-live">LIVE</span> <span class="badge badge-auto">AUTO</span></td>
+            <td>Loop + HIGH confidence trades auto-execute. Medium/low still require Telegram approval.</td>
+          </tr>
+          <tr>
+            <td><code>python3 bot.py --paper --loop --auto</code></td>
+            <td><span class="badge badge-paper">PAPER</span> <span class="badge badge-auto">AUTO</span></td>
+            <td>Full simulation. No real orders placed. Logs to <code>paper_trades.json</code>. Recommended for testing.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Config -->
+    <section id="config">
+      <h2>Configuration</h2>
+      <p>All settings are in <code>.env</code> (secrets) and at the top of <code>bot.py</code> (behaviour).</p>
+
+      <h3>Environment Variables (.env)</h3>
+      <table>
+        <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Claude API key (Anthropic console)</td></tr>
+          <tr><td><code>POLY_PRIVATE_KEY</code></td><td>Polygon wallet private key (0x...)</td></tr>
+          <tr><td><code>POLY_API_KEY</code></td><td>Polymarket CLOB API key</td></tr>
+          <tr><td><code>POLY_API_SECRET</code></td><td>Polymarket CLOB API secret</td></tr>
+          <tr><td><code>POLY_API_PASSPHRASE</code></td><td>Polymarket CLOB API passphrase</td></tr>
+          <tr><td><code>POLY_FUNDER</code></td><td>Funder wallet address (for proxy wallet setups)</td></tr>
+          <tr><td><code>TELEGRAM_BOT_TOKEN</code></td><td>Telegram bot token from BotFather</td></tr>
+          <tr><td><code>TELEGRAM_CHAT_ID</code></td><td>Your Telegram user/chat ID</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Bot Constants (bot.py)</h3>
+      <table>
+        <thead><tr><th>Constant</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>DEFAULT_ORDER_SIZE</code></td><td><code>5.0</code></td><td>USDC per trade</td></tr>
+          <tr><td><code>MAX_ORDER_SIZE</code></td><td><code>25.0</code></td><td>Hard cap per order</td></tr>
+          <tr><td><code>DEVIATION_THRESHOLD</code></td><td><code>0.08</code></td><td>Minimum price deviation from 50/50 to trigger Claude</td></tr>
+          <tr><td><code>COOLDOWN_MINUTES</code></td><td><code>30</code></td><td>Wait time after a scan with no trades found</td></tr>
+          <tr><td><code>COINS</code></td><td><code>["btc","eth","sol","xrp"]</code></td><td>Coins to monitor</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Safety -->
+    <section id="safety">
+      <h2>Safety Controls</h2>
+
+      <div class="callout callout-danger">
+        <strong>PID Lock — No Duplicate Instances</strong>
+        Melissa writes its process ID to <code>/tmp/melissa_bot.pid</code> on start. Any new start attempt checks this file — if the recorded PID is still alive, the new process exits immediately with an error. This prevents duplicate instances from multiplying API costs. Always use <code>kill &lt;PID&gt;</code> to stop Melissa cleanly.
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>Order Size Cap</strong>
+        Even if Claude recommends a large position, the hard <code>MAX_ORDER_SIZE = $25</code> cap applies at execution time. Orders above this are rejected before hitting the CLOB.
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>No VPN Required</strong>
+        Polymarket's CLOB API returns 403 errors when accessed through a US-pointing VPN from certain regions. Run Melissa without VPN active from Jakarta / outside the US.
+      </div>
+
+      <div class="callout callout-info">
+        <strong>Crash Recovery</strong>
+        Failed order placements (network errors, insufficient balance, API errors) are caught with try/except, reported to Telegram, and skipped — the loop continues without crashing.
+      </div>
+    </section>
+
+    <!-- Lessons -->
+    <section id="lessons">
+      <h2>Learned Lessons</h2>
+      <p>These lessons are derived from real trade outcomes and injected into Claude's system prompt on every call.</p>
+
+      <div class="lesson">
+        <div class="lesson-num">Lesson 1</div>
+        <div class="lesson-title">Crypto 5-min/15-min Up/Down Markets — Use the Price Trend</div>
+        <div class="lesson-body">Deviation from 50/50 reflects real momentum, not mispricing. Active traders are already positioned based on live price movement. A market at 70¢ Down almost certainly means crypto IS falling.</div>
+        <div class="lesson-rule">RISING Binance + Down leading = momentum fade → SKIP<br>FLAT Binance + deviation = possible mean reversion → MEDIUM max<br>Binance contradicts Polymarket = divergence signal → investigate</div>
+      </div>
+
+      <div class="lesson">
+        <div class="lesson-num">Lesson 2</div>
+        <div class="lesson-title">Sports Spread and News Markets — Real Edge Exists</div>
+        <div class="lesson-body">Sports spread bets (Celtics -6.5) and news markets (DHS shutdown) have demonstrated profitability. Claude's knowledge of base rates, team form, and news context provides genuine information advantage over the market price.</div>
+        <div class="lesson-rule">Prioritize today's-market signals. Be more willing to flag HIGH confidence when mispricing is clear.</div>
+      </div>
+
+      <div class="lesson">
+        <div class="lesson-num">Lesson 3</div>
+        <div class="lesson-title">Averaging Down on Losing Positions</div>
+        <div class="lesson-body">The Indonesia trade deal was bought twice ($4 + $6 = $10 total), then sold for $3.52 — a $6.48 loss. The second buy averaged down on a position already moving against us.</div>
+        <div class="lesson-rule">Never buy more of a market where a position already exists at a worse price.</div>
+      </div>
+
+      <div class="lesson">
+        <div class="lesson-num">Lesson 4</div>
+        <div class="lesson-title">Long-Tail Geopolitical Bets at Extreme Odds</div>
+        <div class="lesson-body">France/UK/Germany strike Iran (Yes at 7¢) and Fed 50bps cut (Yes at 0.4¢) both expired worthless. Low-probability geopolitical bets are lottery tickets, not edges.</div>
+        <div class="lesson-rule">Avoid bets below 10¢ on geopolitical events unless there is a very specific, time-sensitive catalyst.</div>
+      </div>
+
+      <div class="lesson">
+        <div class="lesson-num">Lesson 5</div>
+        <div class="lesson-title">Duplicate Instances — API Cost Explosion</div>
+        <div class="lesson-body">On 2026-03-30, 7 Melissa instances ran simultaneously and consumed 70% of the Anthropic API budget in under a day (~$6.72/hour at peak). Each restart left orphaned background processes.</div>
+        <div class="lesson-rule">PID lock now enforced. Always run <code>ps aux | grep bot.py</code> before starting. Kill old instances explicitly.</div>
+      </div>
+    </section>
+
+    <!-- Files -->
+    <section id="files">
+      <h2>File Reference</h2>
+      <table>
+        <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>bot.py</code></td><td>Main bot — all trading logic, Claude integration, Telegram, execution</td></tr>
+          <tr><td><code>generate_report.py</code></td><td>P&amp;L report generator using Polymarket Data API. Run with <code>--out report.txt</code></td></tr>
+          <tr><td><code>simulate_strategy.py</code></td><td>Backtests the near-resolution entry strategy on historical 15-min markets</td></tr>
+          <tr><td><code>lessons.md</code></td><td>Human-curated trade lessons. Injected into every Claude prompt</td></tr>
+          <tr><td><code>paper_trades.json</code></td><td>Logged paper mode trades with full metadata</td></tr>
+          <tr><td><code>live_trades.json</code></td><td>Logged live executed trades with order IDs</td></tr>
+          <tr><td><code>.env</code></td><td>All secrets and API keys. Never commit to git.</td></tr>
+          <tr><td><code>melissa.log</code></td><td>stdout from current running session (nohup output)</td></tr>
+          <tr><td><code>/tmp/melissa_bot.pid</code></td><td>PID lock file — deleted on clean exit</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- APIs -->
+    <section id="apis">
+      <h2>APIs Used</h2>
+      <table>
+        <thead><tr><th>API</th><th>Auth</th><th>Key Endpoints</th></tr></thead>
+        <tbody>
+          <tr><td>Polymarket Gamma API</td><td>None</td><td><code>/events</code> — market discovery by slug or filter</td></tr>
+          <tr><td>Polymarket CLOB API</td><td>ECDSA signature</td><td><code>/prices-history</code>, <code>/order</code></td></tr>
+          <tr><td>Polymarket Data API</td><td>None (wallet address)</td><td><code>/positions</code>, <code>/activity</code></td></tr>
+          <tr><td>Binance API</td><td>None</td><td><code>/api/v3/klines</code> — candlestick data</td></tr>
+          <tr><td>Anthropic API</td><td>API key</td><td><code>/v1/messages</code> — claude-opus-4-6</td></tr>
+          <tr><td>Telegram Bot API</td><td>Bot token</td><td><code>/sendMessage</code>, <code>/getUpdates</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Commands -->
+    <section id="commands">
+      <h2>Quick Command Reference</h2>
+      <pre><code><span class="comment"># Start paper trading (recommended)</span>
+source .venv/bin/activate
+nohup python3 -u bot.py --paper --loop --auto > melissa.log 2>&1 &
+
+<span class="comment"># Start live trading (auto-execute HIGH confidence)</span>
+nohup python3 -u bot.py --loop --auto > melissa.log 2>&1 &
+
+<span class="comment"># Check running instances</span>
+ps aux | grep bot.py
+
+<span class="comment"># Stop Melissa</span>
+kill $(cat /tmp/melissa_bot.pid)
+
+<span class="comment"># Watch live log</span>
+tail -f melissa.log
+
+<span class="comment"># Generate P&L report</span>
+python3 generate_report.py --out ~/Desktop/report.txt
+
+<span class="comment"># Run strategy simulation</span>
+python3 simulate_strategy.py --entry 0.75 --size 5 --markets 50</code></pre>
+    </section>
+
+    <footer>
+      <p>Melissa v1.0 — Last updated 2026-03-30 &nbsp;·&nbsp; Built with Python, Claude AI, and Polymarket APIs &nbsp;·&nbsp; For personal use only — not financial advice.</p>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>
