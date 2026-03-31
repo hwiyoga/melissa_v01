@@ -117,6 +117,40 @@
 
     p { margin-bottom: 12px; color: var(--text); }
 
+    /* ── ASCII Art ── */
+    .ascii-art {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 24px;
+      margin-bottom: 28px;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    .ascii-art pre {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--warn));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+
+    .ascii-art .ascii-sub {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: monospace;
+      -webkit-text-fill-color: unset;
+    }
+
     /* ── Disclaimer ── */
     .disclaimer {
       background: linear-gradient(135deg, rgba(231,76,60,0.18), rgba(245,166,35,0.12));
@@ -412,6 +446,34 @@
 
   <!-- Main content -->
   <main>
+
+    <div class="ascii-art">
+      <pre>
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║   ███╗   ███╗███████╗██╗     ██╗███████╗███████╗█████╗      ║
+║   ████╗ ████║██╔════╝██║     ██║██╔════╝██╔════╝██╔══██╗    ║
+║   ██╔████╔██║█████╗  ██║     ██║███████╗███████╗███████║    ║
+║   ██║╚██╔╝██║██╔══╝  ██║     ██║╚════██║╚════██║██╔══██║    ║
+║   ██║ ╚═╝ ██║███████╗███████╗██║███████║███████║██║  ██║    ║
+║   ╚═╝     ╚═╝╚══════╝╚══════╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝   ║
+║                                                              ║
+║         ⚡ AI-POWERED. FEARLESS. ALWAYS WATCHING. ⚡         ║
+║                                                              ║
+║     >>> POLYMARKET TRADING BOT — BUILT DIFFERENT <<<        ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+              \  she doesn't guess. she KNOWS.  /
+               \_________________________________/
+                         |       |
+                      [CLOB]  [BINANCE]  [CLAUDE]
+                         \       |       /
+                          \      |      /
+                           [ MELISSA ]
+                               |||
+                            $$$ 🔥 $$$</pre>
+      <div class="ascii-sub">Polymarket Trading Bot v1.0 &nbsp;·&nbsp; Powered by Claude AI + Binance</div>
+    </div>
 
     <div class="disclaimer">
       <div class="disclaimer-header">⚠ DISCLAIMER — READ BEFORE USING</div>
