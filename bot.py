@@ -903,10 +903,12 @@ def main():
 
 
 def _notify(message: str):
-    """Send a macOS native notification and a Telegram message."""
-    import subprocess
-    script = f'display notification "{message}" with title "Polymarket Bot" sound name "Glass"'
-    subprocess.run(["osascript", "-e", script], capture_output=True)
+    """Send a native notification (macOS only) and a Telegram message."""
+    import platform
+    if platform.system() == "Darwin":
+        import subprocess
+        script = f'display notification "{message}" with title "Polymarket Bot" sound name "Glass"'
+        subprocess.run(["osascript", "-e", script], capture_output=True)
     telegram_send(f"🤖 {message}")
 
 
